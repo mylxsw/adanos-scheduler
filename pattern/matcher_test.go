@@ -10,17 +10,17 @@ import (
 func TestMatch(t *testing.T) {
 	sample := `{"name": "Tom", "age": 24}`
 	{
-		rs, err := pattern.Match("true", sample)
+		rs, err := pattern.StringMatch("true", sample)
 		assert.NoError(t, err)
 		assert.True(t, rs)
 	}
 	{
-		rs, err := pattern.Match(`Int(JQ(".age")) > 20`, sample)
+		rs, err := pattern.StringMatch(`Int(JQ(".age")) > 20`, sample)
 		assert.NoError(t, err)
 		assert.True(t, rs)
 	}
 	{
-		rs, err := pattern.Match(`Int(JQ(".age")) > 25`, sample)
+		rs, err := pattern.StringMatch(`Int(JQ(".age")) > 25`, sample)
 		assert.NoError(t, err)
 		assert.False(t, rs)
 	}
@@ -29,12 +29,12 @@ func TestMatch(t *testing.T) {
 func TestEval(t *testing.T) {
 	sample := `{"name": "Tom", "age": 24, "roles": [{"id": 1, "name": "admin"},{"id":2, "name":"editor"}]}`
 	{
-		rs, err := pattern.Eval(`JQ(".age")`, sample)
+		rs, err := pattern.StringEval(`JQ(".age")`, sample)
 		assert.NoError(t, err)
 		assert.Equal(t, "24", rs)
 	}
 	{
-		rs, err := pattern.Eval(`JQ(".roles[0].name")`, sample)
+		rs, err := pattern.StringEval(`JQ(".roles[0].name")`, sample)
 		assert.NoError(t, err)
 		assert.Equal(t, "admin", rs)
 	}

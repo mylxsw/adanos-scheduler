@@ -199,8 +199,8 @@ func (Helpers) Empty(str string) bool {
 	return strings.EqualFold("false", str)
 }
 
-// jq 使用 JQ 表达式提取 json 字符串中的值
-func (helper Helpers) jq(data string, expression string, suppressError bool) string {
+// JQuery 使用 JQ 表达式提取 json 字符串中的值
+func (helper Helpers) JQuery(data string, expression string, suppressError bool) string {
 	query, err := gojq.Parse(expression)
 	if err != nil {
 		return encodeError(err, suppressError)
@@ -262,9 +262,9 @@ func encodeValues(iter gojq.Iter) (string, error) {
 	return buffer.String(), nil
 }
 
-// domOne 从 HTML DOM 对象中查询第 index 个匹配 selector 的元素内容
-func (helper Helpers) domOne(selector string, index int, htmlContent string) string {
-	eles := helper.dom(selector, htmlContent)
+// DOMQueryOne 从 HTML DOM 对象中查询第 index 个匹配 selector 的元素内容
+func (helper Helpers) DOMQueryOne(selector string, index int, htmlContent string) string {
+	eles := helper.DOMQuery(selector, htmlContent)
 	if len(eles) > index {
 		return eles[index]
 	}
@@ -272,8 +272,8 @@ func (helper Helpers) domOne(selector string, index int, htmlContent string) str
 	return ""
 }
 
-// dom 从 HTML DOM 对象中查询所有匹配 selector 的元素
-func (helper Helpers) dom(selector string, htmlContent string) []string {
+// DOMQuery 从 HTML DOM 对象中查询所有匹配 selector 的元素
+func (helper Helpers) DOMQuery(selector string, htmlContent string) []string {
 	reader, err := goquery.NewDocumentFromReader(bytes.NewBufferString(htmlContent))
 	if err != nil {
 		return []string{}

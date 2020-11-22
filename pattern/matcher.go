@@ -19,8 +19,8 @@ type Matcher struct {
 }
 
 // NewMatcher 创建一个新的 Matcher
-func NewMatcher(expression string) (*Matcher, error) {
-	vmm, err := expr.Compile(expression, expr.Env(&Data{}), expr.AsBool())
+func NewMatcher(expression string, dataType interface{}) (*Matcher, error) {
+	vmm, err := expr.Compile(expression, expr.Env(dataType), expr.AsBool())
 	if err != nil {
 		return nil, fmt.Errorf("invalid expression: %w", err)
 	}
@@ -32,8 +32,8 @@ func NewMatcher(expression string) (*Matcher, error) {
 }
 
 // Match 执行匹配，检查 data 是否能够通过 expression 的评估
-func (matcher *Matcher) Match(data string) (bool, error) {
-	rs, err := expr.Run(matcher.vm, &Data{Data: data})
+func (matcher *Matcher) Match(data interface{}) (bool, error) {
+	rs, err := expr.Run(matcher.vm, data)
 	if err != nil {
 		return false, fmt.Errorf("evaluate expression failed: %w", err)
 	}
@@ -46,13 +46,23 @@ func (matcher *Matcher) Match(data string) (bool, error) {
 }
 
 // Match 检查 data 是否匹配表达式
-func Match(expression string, data string) (bool, error) {
-	matcher, err := NewMatcher(expression)
+func Match(expression string, data interface{}) (bool, error) {
+	matcher, err := NewMatcher(expression, data)
 	if err != nil {
 		return false, err
 	}
 
 	return matcher.Match(data)
+}
+
+// StringMatch 检查 data 是否匹配表达式
+func StringMatch(expression string, data string) (bool, error) {
+	matcher, err := NewMatcher(expression, &Data{Data: data})
+	if err != nil {
+		return false, err
+	}
+
+	return matcher.Match(&Data{Data: data})
 }
 
 // Evaluator 用于计算 data 在应用 expression 后的结果
@@ -62,8 +72,8 @@ type Evaluator struct {
 }
 
 // NewEvaluator 创建一个新的 Evaluator
-func NewEvaluator(expression string) (*Evaluator, error) {
-	vmm, err := expr.Compile(expression, expr.Env(&Data{}))
+func NewEvaluator(expression string, dataType interface{}) (*Evaluator, error) {
+	vmm, err := expr.Compile(expression, expr.Env(dataType))
 	if err != nil {
 		return nil, fmt.Errorf("invalid expression: %w", err)
 	}
@@ -75,8 +85,8 @@ func NewEvaluator(expression string) (*Evaluator, error) {
 }
 
 // Eval 对 data 应用 expression 表达式，返回评估后的结果
-func (eval *Evaluator) Eval(data string) (string, error) {
-	rs, err := expr.Run(eval.vm, &Data{Data: data})
+func (eval *Evaluator) Eval(data interface{}) (string, error) {
+	rs, err := expr.Run(eval.vm, data)
 	if err != nil {
 		return "", fmt.Errorf("evaluate expression failed: %w", err)
 	}
@@ -85,11 +95,21 @@ func (eval *Evaluator) Eval(data string) (string, error) {
 }
 
 // Eval 对 data 应用表达式
-func Eval(expression string, data string) (string, error) {
-	evaluator, err := NewEvaluator(expression)
+func Eval(expression string, data interface{}) (string, error) {
+	evaluator, err := NewEvaluator(expression, data)
 	if err != nil {
 		return "", err
 	}
 
 	return evaluator.Eval(data)
+}
+
+// StringEval 对 data 应用表达式
+func StringEval(expression string, data string) (string, error) {
+	evaluator, err := NewEvaluator(expression, &Data{Data: data})
+	if err != nil {
+		return "", err
+	}
+
+	return evaluator.Eval(&Data{Data: data})
 }
