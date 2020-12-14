@@ -38,4 +38,38 @@ func TestEval(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, "admin", rs)
 	}
+	{
+		rs, err := pattern.StringEval(`CtxJSONInt("roles.0.id")`, sample)
+		assert.NoError(t, err)
+		assert.Equal(t, "1", rs)
+	}
+	{
+		rs, err := pattern.StringEval(`CtxJSONInt("age")`, sample)
+		assert.NoError(t, err)
+		assert.Equal(t, "24", rs)
+	}
+}
+
+func TestJSON(t *testing.T) {
+	sample := `[{"ID": 123, "Name": "管宜尧"},{"ID": 124, "Name": "李逍遥"}]`
+	{
+		rs, err := pattern.StringEval(`len(CtxJSONArray(""))`, sample)
+		assert.NoError(t, err)
+		assert.Equal(t, "2", rs)
+	}
+	{
+		rs, err := pattern.StringEval(`CtxJSONArray(".ID")`, sample)
+		assert.NoError(t, err)
+		assert.Equal(t, "[123 124]", rs)
+	}
+	{
+		rs, err := pattern.StringEval(`map(CtxJSONStrArray(".Name"), {# + '*'})`, sample)
+		assert.NoError(t, err)
+		assert.Equal(t, "[管宜尧* 李逍遥*]", rs)
+	}
+	{
+		rs, err := pattern.StringEval(`any(CtxJSONIntArray(".ID"), {# == 124})`, sample)
+		assert.NoError(t, err)
+		assert.Equal(t, "true", rs)
+	}
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/itchyny/gojq"
 	"github.com/mylxsw/coll"
 	"github.com/pingcap/parser"
+	"github.com/tidwall/gjson"
 )
 
 // Helpers 用于规则引擎的助手函数
@@ -289,4 +290,82 @@ func (helper Helpers) DOMQuery(selector string, htmlContent string) []string {
 	})
 
 	return res
+}
+
+// JSONArray return array elements from path
+func (helper Helpers) JSONArray(content string, path string) []gjson.Result {
+	if path == "" {
+		return gjson.Parse(content).Array()
+	}
+
+	if strings.HasPrefix(path, ".") {
+		res := make([]gjson.Result, 0)
+		for _, val := range gjson.Parse(content).Array() {
+			res = append(res, val.Get(strings.TrimLeft(path, ".")).Array()...)
+		}
+
+		return res
+	}
+
+	return gjson.Get(content, path).Array()
+}
+
+// JSONStrArray return string array from json
+func (helper Helpers) JSONStrArray(content string, path string) []string {
+	strarrs := make([]string, 0)
+	for _, res := range helper.JSONArray(content, path) {
+		strarrs = append(strarrs, res.String())
+	}
+
+	return strarrs
+}
+
+// JSONIntArray return int64 array from json
+func (helper Helpers) JSONIntArray(content string, path string) []int64 {
+	intarrs := make([]int64, 0)
+	for _, res := range helper.JSONArray(content, path) {
+		intarrs = append(intarrs, res.Int())
+	}
+
+	return intarrs
+}
+
+// JSONFloatArray return float64 array from json
+func (helper Helpers) JSONFloatArray(content string, path string) []float64 {
+	floatarrs := make([]float64, 0)
+	for _, res := range helper.JSONArray(content, path) {
+		floatarrs = append(floatarrs, res.Float())
+	}
+
+	return floatarrs
+}
+
+// JSONBoolArray return bool array from json
+func (helper Helpers) JSONBoolArray(content string, path string) []bool {
+	boolarrs := make([]bool, 0)
+	for _, res := range helper.JSONArray(content, path) {
+		boolarrs = append(boolarrs, res.Bool())
+	}
+
+	return boolarrs
+}
+
+// JSON return string content from json
+func (helper Helpers) JSON(content string, path string) string {
+	return gjson.Get(content, path).Raw
+}
+
+// JSONInt return int content from json
+func (helper Helpers) JSONInt(content string, path string) int64 {
+	return gjson.Get(content, path).Int()
+}
+
+// JSONFloat return float64 content from json
+func (helper Helpers) JSONFloat(content string, path string) float64 {
+	return gjson.Get(content, path).Float()
+}
+
+// JSONBool return bool content from json
+func (helper Helpers) JSONBool(content string, path string) bool {
+	return gjson.Get(content, path).Bool()
 }

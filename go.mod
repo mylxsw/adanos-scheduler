@@ -11,5 +11,6 @@ require (
 	github.com/mylxsw/sshx v0.0.0-20201120074140-be470ca4f4f5
 	github.com/pingcap/parser v0.0.0-20200623164729-3a18f1e5dceb
 	github.com/stretchr/testify v1.6.1
+	github.com/tidwall/gjson v1.6.4
 	golang.org/x/text v0.3.4
 )
