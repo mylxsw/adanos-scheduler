@@ -12,5 +12,4 @@ require (
 	github.com/pingcap/parser v0.0.0-20200623164729-3a18f1e5dceb
 	github.com/stretchr/testify v1.6.1
 	github.com/tidwall/gjson v1.6.4
-	golang.org/x/text v0.3.4
 )

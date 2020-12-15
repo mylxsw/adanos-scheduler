@@ -137,8 +137,19 @@ func (Helpers) FilterEmptyLines(content string) string {
 }
 
 // Join 字符串数组拼接
-func (Helpers) Join(sep string, strs []string) string {
-	return strings.Join(strs, sep)
+func (Helpers) Join(elements interface{}, sep string) string {
+	switch elements.(type) {
+	case []string:
+		return strings.Join(elements.([]string), sep)
+	case []interface{}:
+		items := make([]string, 0)
+		for _, ele := range elements.([]interface{}) {
+			items = append(items, fmt.Sprintf("%v", ele))
+		}
+		return strings.Join(items, sep)
+	default:
+		return "invalid join types"
+	}
 }
 
 // Repeat 字符串重复 count 次
@@ -368,4 +379,14 @@ func (helper Helpers) JSONFloat(content string, path string) float64 {
 // JSONBool return bool content from json
 func (helper Helpers) JSONBool(content string, path string) bool {
 	return gjson.Get(content, path).Bool()
+}
+
+// String convert any data to string
+func (helper Helpers) String(data interface{}) string {
+	return fmt.Sprintf("%v", data)
+}
+
+func (helper Helpers) JSONEncode(data interface{}) string {
+	b, _ := json.Marshal(data)
+	return string(b)
 }
