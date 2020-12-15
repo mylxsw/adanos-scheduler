@@ -7,10 +7,10 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/mylxsw/adanos-scheduler/pattern"
 	"github.com/mylxsw/asteria/formatter"
 	"github.com/mylxsw/asteria/log"
 	"github.com/mylxsw/coll"
+	"github.com/mylxsw/pattern"
 	"github.com/mylxsw/sshx"
 )
 
