@@ -16,6 +16,7 @@ import (
 	"github.com/mylxsw/adanos-scheduler/pubsub"
 	"github.com/mylxsw/adanos-scheduler/repo"
 	repoMock "github.com/mylxsw/adanos-scheduler/repo/mock"
+	"github.com/mylxsw/adanos-scheduler/scheduler"
 	"github.com/mylxsw/adanos-scheduler/service"
 	"github.com/mylxsw/asteria/formatter"
 	"github.com/mylxsw/asteria/level"
@@ -86,6 +87,7 @@ func main() {
 	app.Provider(api.Provider{})
 	app.Provider(service.Provider{})
 	app.Provider(pubsub.Provider{})
+	app.Provider(scheduler.Provider{})
 
 	app.WebAppExceptionHandler(func(ctx web.Context, err interface{}) web.Response {
 		if errTyped, ok := err.(error); ok {
