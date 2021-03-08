@@ -14,6 +14,8 @@ type JobPlanLoaderTask struct {
 	jobSrv  service.JobService
 	nodeSrv service.NodeService
 	credSrv service.CredentialService
+
+	planSnapshots map[string]service.PlanWithJob
 }
 
 // NewJobPlanLoaderTask 创建 JobPlanLoaderTask
@@ -22,6 +24,8 @@ func NewJobPlanLoaderTask(jobSrv service.JobService, nodeSrv service.NodeService
 		jobSrv:  jobSrv,
 		nodeSrv: nodeSrv,
 		credSrv: credSrv,
+
+		planSnapshots: make(map[string]service.PlanWithJob),
 	}
 }
 

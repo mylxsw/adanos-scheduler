@@ -6,6 +6,7 @@ import (
 
 	"github.com/mylxsw/adanos-scheduler/repo"
 	"github.com/mylxsw/asteria/log"
+	"github.com/mylxsw/coll"
 	"github.com/mylxsw/container"
 )
 
@@ -15,6 +16,12 @@ type JobWithPlan struct {
 	Plans []repo.JobPlan `json:"plans"`
 }
 
+// PlanWithJob 计划和执行的job的组合体
+type PlanWithJob struct {
+	repo.JobPlan
+	Job repo.Job `json:"job"`
+}
+
 // JobService 任务管理服务接口
 type JobService interface {
 	// AllJobs 查询所有的 jobs
@@ -22,9 +29,9 @@ type JobService interface {
 	// AllPlansForJob 查询任务关联的所有执行计划
 	JobWithPlans(ctx context.Context, jobID string) (*JobWithPlan, error)
 	// AllPlans 查询所有的计划任务
-	AllPlans(ctx context.Context) ([]repo.JobPlan, error)
+	AllPlans(ctx context.Context) ([]PlanWithJob, error)
 	// JobPlan 查询某个计划任务详情
-	JobPlan(ctx context.Context, jobID string, planID string) (*repo.JobPlan, error)
+	JobPlan(ctx context.Context, jobID string, planID string) (*PlanWithJob, error)
 
 	// CreateJobWithPlan 创建一个带有计划的 job
 	CreateJobWithPlan(ctx context.Context, job JobWithPlan) (jobID string, err error)
@@ -76,11 +83,29 @@ func (srv *jobService) JobWithPlans(ctx context.Context, jobID string) (*JobWith
 	}, nil
 }
 
-func (srv *jobService) AllPlans(ctx context.Context) ([]repo.JobPlan, error) {
-	return srv.jobPlanRepo.All(ctx)
+func (srv *jobService) AllPlans(ctx context.Context) ([]PlanWithJob, error) {
+	plans, err := srv.jobPlanRepo.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var planWithJobs []PlanWithJob
+	err = coll.MustNew(plans).Map(func(p repo.JobPlan) PlanWithJob {
+		planWithJob := PlanWithJob{JobPlan: p}
+		job, err := srv.jobRepo.GetByID(ctx, p.JobID)
+		if err != nil {
+			log.With(p).Errorf("get job by id failed: %v", err)
+		} else {
+			planWithJob.Job = *job
+		}
+
+		return planWithJob
+	}).All(&planWithJobs)
+
+	return planWithJobs, err
 }
 
-func (srv *jobService) JobPlan(ctx context.Context, jobID string, planID string) (*repo.JobPlan, error) {
+func (srv *jobService) JobPlan(ctx context.Context, jobID string, planID string) (*PlanWithJob, error) {
 	plan, err := srv.jobPlanRepo.Get(ctx, planID)
 	if err != nil {
 		return nil, err
@@ -90,7 +115,19 @@ func (srv *jobService) JobPlan(ctx context.Context, jobID string, planID string)
 		return nil, repo.ErrNotFound
 	}
 
-	return plan, nil
+	res := &PlanWithJob{JobPlan: *plan}
+	if plan.JobID == "" {
+		return res, nil
+	}
+
+	job, err := srv.jobRepo.GetByID(ctx, plan.JobID)
+	if err != nil {
+		log.With(plan).Errorf("query job by id failed: %v", err)
+		return res, nil
+	}
+	res.Job = *job
+
+	return res, nil
 }
 
 func (srv *jobService) CreateJobWithPlan(ctx context.Context, job JobWithPlan) (jobID string, err error) {
