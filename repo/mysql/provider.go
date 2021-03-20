@@ -1,14 +1,13 @@
 package mysql
 
 import (
-	"github.com/mylxsw/container"
 	"github.com/mylxsw/glacier/infra"
 )
 
 type Provider struct {
 }
 
-func (p Provider) Register(app container.Container) {
+func (p Provider) Register(app infra.Binder) {
 	app.MustSingletonOverride(NewNodeRepo)
 	app.MustSingletonOverride(NewCredentialRepo)
 	app.MustSingletonOverride(NewNodeCredentialRepo)
@@ -17,5 +16,5 @@ func (p Provider) Register(app container.Container) {
 	app.MustSingletonOverride(NewJobHistoryRepo)
 }
 
-func (p Provider) Boot(app infra.Glacier) {
+func (p Provider) Boot(app infra.Resolver) {
 }

@@ -5,20 +5,20 @@ import (
 
 	"github.com/mylxsw/adanos-scheduler/repo"
 	"github.com/mylxsw/adanos-scheduler/service"
-	"github.com/mylxsw/container"
+	"github.com/mylxsw/glacier/infra"
 	"github.com/mylxsw/glacier/web"
 )
 
 type CredentialController struct {
-	cc container.Container
+	cc infra.Resolver
 }
 
-func NewCredentialController(cc container.Container) web.Controller {
+func NewCredentialController(cc infra.Resolver) web.Controller {
 	return &CredentialController{cc: cc}
 }
 
-func (ctl CredentialController) Register(router *web.Router) {
-	router.Group("/credentials/", func(router *web.Router) {
+func (ctl CredentialController) Register(router web.Router) {
+	router.Group("/credentials/", func(router web.Router) {
 		router.Get("/", ctl.All)
 
 		router.Post("/", ctl.Create)

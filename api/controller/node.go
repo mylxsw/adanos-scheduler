@@ -7,20 +7,20 @@ import (
 	"github.com/mylxsw/adanos-scheduler/service"
 	"github.com/mylxsw/asteria/log"
 	"github.com/mylxsw/coll"
-	"github.com/mylxsw/container"
+	"github.com/mylxsw/glacier/infra"
 	"github.com/mylxsw/glacier/web"
 )
 
 type NodeController struct {
-	cc container.Container
+	cc infra.Resolver
 }
 
-func NewNodeController(cc container.Container) web.Controller {
+func NewNodeController(cc infra.Resolver) web.Controller {
 	return &NodeController{cc: cc}
 }
 
-func (ctl NodeController) Register(router *web.Router) {
-	router.Group("/nodes/", func(router *web.Router) {
+func (ctl NodeController) Register(router web.Router) {
+	router.Group("/nodes/", func(router web.Router) {
 		router.Get("/", ctl.All)
 		router.Get("/basic/", ctl.AllNodesBasic)
 

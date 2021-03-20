@@ -6,21 +6,21 @@ import (
 
 	"github.com/mylxsw/adanos-scheduler/repo"
 	"github.com/mylxsw/adanos-scheduler/service"
-	"github.com/mylxsw/container"
+	"github.com/mylxsw/glacier/infra"
 	"github.com/mylxsw/glacier/web"
 )
 
 type JobController struct {
-	cc container.Container
+	cc infra.Resolver
 }
 
-func NewJobController(cc container.Container) web.Controller {
+func NewJobController(cc infra.Resolver) web.Controller {
 	ctl := &JobController{cc: cc}
 	return ctl
 }
 
-func (ctl JobController) Register(router *web.Router) {
-	router.Group("/jobs", func(router *web.Router) {
+func (ctl JobController) Register(router web.Router) {
+	router.Group("/jobs", func(router web.Router) {
 		router.Get("/", ctl.Jobs)
 
 		router.Post("/", ctl.CreateJob)

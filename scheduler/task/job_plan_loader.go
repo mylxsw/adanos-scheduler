@@ -6,7 +6,7 @@ import (
 
 	"github.com/mylxsw/adanos-scheduler/service"
 	"github.com/mylxsw/asteria/log"
-	"github.com/mylxsw/container"
+	"github.com/mylxsw/glacier/infra"
 )
 
 // JobPlanLoaderTask 用于加载计划任务并分配个相应的执行器，更新执行计划
@@ -25,7 +25,7 @@ func NewJobPlanLoaderTask(jobSrv service.JobService, nodeSrv service.NodeService
 	}
 }
 
-func (job *JobPlanLoaderTask) Handle(cc container.Container) error {
+func (job *JobPlanLoaderTask) Handle(cc infra.Resolver) error {
 	return cc.ResolveWithError(func(ctx context.Context) error {
 		plans, err := job.jobSrv.AllPlans(ctx)
 		if err != nil {

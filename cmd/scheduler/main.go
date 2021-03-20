@@ -1,20 +1,15 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"math/rand"
-	"net/http"
 	"os"
 	"path/filepath"
-	"runtime/debug"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/mylxsw/adanos-scheduler/api"
 	"github.com/mylxsw/adanos-scheduler/config"
 	"github.com/mylxsw/adanos-scheduler/pubsub"
-	"github.com/mylxsw/adanos-scheduler/repo"
 	repoMock "github.com/mylxsw/adanos-scheduler/repo/mock"
 	"github.com/mylxsw/adanos-scheduler/scheduler"
 	"github.com/mylxsw/adanos-scheduler/service"
@@ -25,9 +20,7 @@ import (
 	"github.com/mylxsw/container"
 	"github.com/mylxsw/glacier/event"
 	"github.com/mylxsw/glacier/infra"
-	"github.com/mylxsw/glacier/listener"
 	"github.com/mylxsw/glacier/starter/application"
-	"github.com/mylxsw/glacier/web"
 	"github.com/urfave/cli"
 	"github.com/urfave/cli/altsrc"
 )
@@ -49,7 +42,6 @@ func main() {
 		Usage: "日志文件输出目录（非文件名），默认为空，输出到标准输出",
 	}))
 
-	app.WithHttpServer(listener.FlagContext("listen"), infra.SetIgnoreLastSlashOption(true))
 	app.BeforeServerStart(func(cc container.Container) error {
 		stackWriter := writer.NewStackWriter()
 		cc.MustResolve(func(c infra.FlagContext) {
@@ -89,38 +81,23 @@ func main() {
 	app.Provider(pubsub.Provider{})
 	app.Provider(scheduler.Provider{})
 
-	app.WebAppExceptionHandler(func(ctx web.Context, err interface{}) web.Response {
-		if errTyped, ok := err.(error); ok {
-			if errors.Is(errTyped, repo.ErrNotFound) {
-				return ctx.JSONError(fmt.Sprintf("%v", err), http.StatusNotFound)
-			}
-		}
-
-		log.With(string(debug.Stack())).Errorf("request handle error: %v", err)
-		return ctx.JSONError(fmt.Sprintf("%v", err), http.StatusInternalServerError)
-	})
-
-	app.Main(func(conf *config.Config, router *mux.Router, em event.Manager) {
+	app.Main(func(conf *config.Config, publisher event.Publisher) {
 		rand.Seed(time.Now().Unix())
 
 		if log.DebugEnabled() {
 			log.WithFields(log.Fields{
 				"config": conf,
 			}).Debug("configuration")
-
-			for _, r := range web.GetAllRoutes(router) {
-				log.Debugf("route: %s -> %s | %s | %s", r.Name, r.Methods, r.PathTemplate, r.PathRegexp)
-			}
 		}
 
-		em.Publish(pubsub.SystemUpDownEvent{
+		publisher.Publish(pubsub.SystemUpDownEvent{
 			Up:        true,
 			CreatedAt: time.Now(),
 		})
 	})
-	app.BeforeServerStop(func(cc container.Container) error {
-		return cc.Resolve(func(em event.Manager) {
-			em.Publish(pubsub.SystemUpDownEvent{
+	app.BeforeServerStop(func(cc infra.Resolver) error {
+		return cc.Resolve(func(publisher event.Publisher) {
+			publisher.Publish(pubsub.SystemUpDownEvent{
 				Up:        false,
 				CreatedAt: time.Now(),
 			})
