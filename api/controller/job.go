@@ -201,7 +201,7 @@ func (ctl JobController) RemoveJobPlan(ctx context.Context, req web.Request, srv
 }
 
 // GetJobPlan 查询某个计划任务信息
-func (ctl JobController) GetJobPlan(ctx context.Context, req web.Request, srv service.JobService) (*repo.JobPlan, error) {
+func (ctl JobController) GetJobPlan(ctx context.Context, req web.Request, srv service.JobService) (*service.PlanWithJob, error) {
 	jobID := req.PathVar("job_id")
 	planID := req.PathVar("plan_id")
 
